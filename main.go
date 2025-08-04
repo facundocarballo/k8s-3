@@ -2,41 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
 )
-
-// func main() {
-// 	// URL a la que se le va a hacer la solicitud GET
-// 	url := "http://k8s-2.microservices:8080/user"
-
-// 	// Hacemos la solicitud
-// 	resp, err := http.Get(url)
-// 	if err != nil {
-// 		fmt.Println("Error al hacer la solicitud:", err)
-// 		return
-// 	}
-// 	defer resp.Body.Close()
-
-// 	// Leemos el cuerpo de la respuesta
-// 	body, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		fmt.Println("Error al leer el cuerpo:", err)
-// 		return
-// 	}
-
-// 	// Imprimimos la respuesta
-// 	fmt.Println("Código de estado:", resp.StatusCode)
-// 	fmt.Println("Respuesta:")
-// 	fmt.Println(string(body))
-// }
-
-type User struct {
-	ID    string `json:"id"`
-	USERNAME string `json:"nombre"`
-	PASSWORD string `json:"password"`
-}
 
 func getUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Obtener el valor de la ruta: /user/{id}
@@ -48,7 +18,12 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 		// Hacemos la solicitud
 		resp, err := http.Get(url)
 		if err != nil {
-			fmt.Println("Error al hacer la solicitud:", err)
+			// Seteamos status y content-type
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadGateway)
+
+			// Escribimos un body personalizado en JSON
+			fmt.Fprintf(w, `{"error": "No se pudo contactar con el servicio externo"}`)
 			return
 		}
 		defer resp.Body.Close()
